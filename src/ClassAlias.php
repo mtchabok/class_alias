@@ -25,24 +25,32 @@ class ClassAlias
 	 * @param string|array $alias
 	 * 		<br>alias name string
 	 * 		<br>array('alias'=>'alias name', 'className'=>'class name', ...)
+	 * 		<br>array( array('alias'=>'alias name', 'className'=>'class name', ...), array('alias'=>'alias name', 'className'=>'class name', ...) )
 	 * @param string $className [optional]
 	 * @param array $details [optional]
 	 * @return ClassAlias
 	 */
 	public function add(string $alias, string $className = null, array $details = null) :ClassAlias
 	{
-		if(is_array($alias)) $details = $alias;
-		else
-			$details = array_merge(
+		$aliases = [];
+		if(is_array($alias) && !empty($alias['alias']))
+			$aliases = [$alias];
+		elseif (is_array($alias) && !empty($alias[0]['alias']))
+			$aliases = $alias;
+		elseif (is_string($alias) && $alias)
+			$aliases = [array_merge(
 				is_array($details) ?$details :[]
 				, ['alias'=>(string) $alias, 'className'=>(string) $className]
-			);
-		unset($alias, $className);
-		foreach ($this->_onAdd as $func){
-			if(is_array($result = call_user_func($func, $details)) && $result)
-				$details = $result;
+			)];
+		unset($alias, $className, $details);
+		while ($aliasDetails = array_shift($aliases)){
+			foreach ($this->_onAdd as $func){
+				if(is_array($result = call_user_func($func, $aliasDetails)) && $result)
+					$aliasDetails = $result;
+			}
+			if(!empty($aliasDetails['alias']))
+				$this->_aliasDetails[$aliasDetails['alias']] = $aliasDetails;
 		}
-		$this->_aliasDetails[$details['alias']] = $details;
 		return $this;
 	}
 
