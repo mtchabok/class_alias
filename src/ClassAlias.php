@@ -38,11 +38,12 @@ class ClassAlias implements ArrayAccess
 	 * 		<br>array( array('alias'=>'alias name', 'className'=>'class name', ...), array('alias'=>'alias name', 'className'=>'class name', ...) )
 	 * @param string $className [optional]
 	 * @param array $details [optional]
-	 * @param bool $mergeOnExist [optional]
+	 * @param array $addOptions [optional]
 	 * @return ClassAlias
 	 */
-	public function add($alias, string $className = null, array $details = null, bool $mergeOnExist = true) :ClassAlias
+	public function add($alias, string $className = null, array $details = null, array $addOptions = null) :ClassAlias
 	{
+		$addOptions = array_merge(['add'=>true, 'update'=>true, 'merge'=>true], is_array($addOptions) ?$addOptions :[]);
 		$aliases = [];
 		if(is_array($alias)) {
 			$aliases = !empty($alias['alias']) ? [$alias] : $alias;
@@ -60,16 +61,36 @@ class ClassAlias implements ArrayAccess
 		}
 		while ($aliasDetails = array_shift($aliases)){
 			if((is_array($aliasDetails) || $aliasDetails instanceof ClassAliasDetails) && !empty($aliasDetails['alias'])){
-				if($mergeOnExist && array_key_exists($aliasDetails['alias'], $this->_aliasDetails))
-					$this->_aliasDetails[$aliasDetails['alias']]->merge($aliasDetails);
-				elseif($aliasDetails instanceOf ClassAliasDetails)
-					$this->_aliasDetails[$aliasDetails['alias']] = $aliasDetails;
-				else
-					$this->_aliasDetails[$aliasDetails['alias']] = new $ClassAliasDetailsCN($aliasDetails);
+				$exist = array_key_exists($aliasDetails['alias'], $this->_aliasDetails);
+				if($exist && $addOptions['update']){
+					if($addOptions['merge'])
+						$this->_aliasDetails[$aliasDetails['alias']]->merge($aliasDetails);
+					else
+						$this->_aliasDetails[$aliasDetails['alias']] = $aliasDetails instanceOf ClassAliasDetails
+							?$aliasDetails
+							:new $ClassAliasDetailsCN($aliasDetails);
+				}elseif (!$exist && $addOptions['add']){
+					$this->_aliasDetails[$aliasDetails['alias']] = $aliasDetails instanceOf ClassAliasDetails
+						?$aliasDetails
+						:new $ClassAliasDetailsCN($aliasDetails);
+				}
 			}
 		}
 		return $this;
 	}
+
+	/**
+	 * @param string|array|ClassAliasDetails|ClassAliasDetails[] $alias
+	 * 		<br>alias name string
+	 * 		<br>new ClassAliasDetails(array('alias'=>'alias name', 'className'=>'class name', ...))
+	 * 		<br>array('alias'=>'alias name', 'className'=>'class name', ...)
+	 * 		<br>array( array('alias'=>'alias name', 'className'=>'class name', ...), array('alias'=>'alias name', 'className'=>'class name', ...) )
+	 * @param string $className [optional]
+	 * @param array $details [optional]
+	 * @return ClassAlias
+	 */
+	public function addOnNotExist($alias, string $className = null, array $details = null)
+	{ return $this->add($alias, $className, $details, ['add'=>true, 'update'=>false]); }
 
 	/**
 	 * @param string $alias
