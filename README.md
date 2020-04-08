@@ -14,37 +14,39 @@ How To Usage
 #### Create ClassAlias Object ####
 ```php
 use \Mtchabok\ClassAlias\ClassAlias;
+use \Mtchabok\ClassAlias\ClassAliasDetails;
 
-$CA = ClassAlias::getClassAlias('myCA');
+$CA = ClassAlias::newClassAlias();
+$CA = ClassAlias::newClassAlias('name of class alias object');
+$CA = ClassAlias::newClassAlias(['name'=>'name of class alias object']);
 ```
 
 #### Add Alias ####
 ```php
-$CA->add('aliasName', 'class name');
-$CA->add(array('alias'=>'aliasName', 'className'=>'class name'));
-
-$CA->add('aliasName', 'class name', array('other detail index'=>'other detail value', ...));
-$CA->add(array('alias'=>'aliasName', 'className'=>'class name', 'other detail index'=>'other detail value', ...));
+$CA->add('alias name', 'class name', ['index other option'=>'value other option', ]);
+$CA->add(['alias'=>'alias name', 'className'=>'class name', 'index other option'=>'value other option', ]);
+$CA->add(new ClassAliasDetails(['alias'=>'alias name', 'className'=>'class name', 'index other option'=>'value other option', ]));
+$CA['alias name'] = ['className'=>'class name', 'index other option'=>'value other option',];
 ```
 
 #### Get ClassName By Alias ####
 ```php
-$CA->get('aliasName')['className'];
-$CA->getClassName('aliasName');
-$CA->aliasName['className'];
+$CA->get('alias name')->className;
+$CA->getClassName('alias name');
+$CA['alias name']->className;
 ```
 
 #### Get Other Detail By Alias ####
 ```php
-$CA->get('aliasName')['other detail'];
-$CA->{'get' . 'other detail'}('aliasName');
-$CA->aliasName['other detail'];
+$CA->get('alias name')->otherOption;
+$CA->getOtherOption('alias name');
+$CA['alias name']->otherOption;
 ```
 
 #### Find Alias By Class Detail ####
 ```php
-$result = $CA->Find(function($aliasDetails){
-    if(0===strpos($aliasDetails['className'], 'Mtchabok'))
+$result = $CA->Find(function(ClassAliasDetails $aliasDetails){
+    if(0===strpos($aliasDetails->className, 'Mtchabok'))
         return true;
     else
         return false;
@@ -52,15 +54,5 @@ $result = $CA->Find(function($aliasDetails){
 // in $result variable => array('alias name', 'alias name', ...);
 ```
 
-#### OnAdd Event ####
-```php
-$CA->onAdd(function(array $aliasDetails){
-    if(0===strpos($aliasDetails['alias], 'my'))
-        $aliasDetails['group'] = 'my';
-    else
-        $aliasDetails['group'] = '';
-    return $aliasDetails;
-});
-```
 
 #### For More Usage Documentation, Use This ClassAlias Package By IDE ####
