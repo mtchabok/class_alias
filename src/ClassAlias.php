@@ -134,8 +134,13 @@ class ClassAlias implements ArrayAccess
 			$details = $this->_aliasDetails[$alias];
 		elseif (!$localOnly && $CA = $this->parent)
 			$details = $CA->get($alias);
-		if(isset($details->link) && $this->exist($details->link, $localOnly))
-			$details = $this->get($details->link, $localOnly);
+		if(!empty($details->link)){
+			if(is_string($details->link) && $alias!=$details->link && $this->exist($details->link))
+				$details = $this->get($details->link);
+			elseif (is_array($details->link) && !empty($details->link[1]) && $CA = static::getClassAlias((string) $details->link[0])){
+				$details = $CA->get((string) $details->link[1]);
+			}
+		}
 		return $details;
 	}
 
