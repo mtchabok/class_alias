@@ -129,11 +129,14 @@ class ClassAlias implements ArrayAccess
 	 */
 	public function get(string $alias, bool $localOnly = null)
 	{
+		$details = null;
 		if(isset($this->_aliasDetails[$alias]))
-			return $this->_aliasDetails[$alias];
+			$details = $this->_aliasDetails[$alias];
 		elseif (!$localOnly && $CA = $this->parent)
-			return $CA->get($alias);
-		return null;
+			$details = $CA->get($alias);
+		if(isset($details->link) && $this->exist($details->link, $localOnly))
+			$details = $this->get($details->link, $localOnly);
+		return $details;
 	}
 
 	/**
