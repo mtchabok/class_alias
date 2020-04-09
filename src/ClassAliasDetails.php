@@ -7,6 +7,7 @@ namespace Mtchabok\ClassAlias;
  *
  * @property-read string alias
  * @property string className
+ * @property string link
  */
 class ClassAliasDetails implements \ArrayAccess
 {
@@ -44,6 +45,8 @@ class ClassAliasDetails implements \ArrayAccess
 			$this->_details['alias'] = uniqid('CAD_');
 		if(!isset($this->_details['className']))
 			$this->_details['className'] = '';
+		if(!isset($this->_details['link']) || !is_string($this->_details['link']) || $this->_details['link']==$this->_details['alias'])
+			$this->_details['link'] = '';
 	}
 
 
@@ -54,23 +57,39 @@ class ClassAliasDetails implements \ArrayAccess
 	{ return array_key_exists($offset, $this->_details) ?$this->_details[$offset] :null; }
 
 	public function offsetSet($offset, $value)
-	{ if(!in_array($offset, ['alias'])) $this->_details[$offset] = $value; }
+	{
+		if($offset=='link'){
+			if(is_string($value) && $value!=$this->_details['alias']) $this->_details['link'] = (string) $value;
+		}elseif(!in_array($offset, ['alias'])) $this->_details[$offset] = $value;
+	}
 
 	public function offsetUnset($offset)
-	{ if(!in_array($offset, ['alias', 'className'])) unset($this->_details[$offset]); }
+	{
+		if(in_array($offset, ['link', 'className'])) {
+			if (isset($this->_details[$offset])) $this->_details[$offset] = '';
+		}elseif(!in_array($offset, ['alias'])) unset($this->_details[$offset]);
+	}
 
 
 	public function __get($name)
 	{ return array_key_exists($name, $this->_details) ?$this->_details[$name] :null; }
 
 	public function __set($name, $value)
-	{ if(!in_array($name, ['alias'])) $this->_details[$name] = $value; }
+	{
+		if($name=='link'){
+			if(is_string($value) && $value!=$this->_details['alias']) $this->_details['link'] = (string) $value;
+		}elseif(!in_array($name, ['alias'])) $this->_details[$name] = $value;
+	}
 
 	public function __isset($name)
 	{ return array_key_exists($name, $this->_details); }
 
 	public function __unset($name)
-	{ if(!in_array($name, ['alias', 'className'])) unset($this->_details[$name]); }
+	{
+		if(in_array($name, ['link', 'className'])) {
+			if (isset($this->_details[$name])) $this->_details[$name] = '';
+		}elseif(!in_array($name, ['alias'])) unset($this->_details[$name]);
+	}
 
 
 	public function __toString()
