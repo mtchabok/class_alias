@@ -94,10 +94,11 @@ class ClassAlias implements ArrayAccess
 
 	/**
 	 * @param string $alias
+	 * @param bool $localOnly [optional]
 	 * @return bool
 	 */
-	public function exist(string $alias)
-	{ return isset($this->_aliasDetails[$alias]) || ( ($CA=$this->parent) && $CA->exist($alias)); }
+	public function exist(string $alias, bool $localOnly = null)
+	{ return isset($this->_aliasDetails[$alias]) || ( !$localOnly && ($CA=$this->parent) && $CA->exist($alias)); }
 
 	/**
 	 * @param callable $matchFunc
@@ -105,10 +106,10 @@ class ClassAlias implements ArrayAccess
 	 * 			<br>>if( is match $aliasDetails ) return true; else return false;
 	 * 		<br>}
 	 * @param bool $revers [optional]
-	 * @param bool $localWork [optional]
+	 * @param bool $localOnly [optional]
 	 * @return string[]
 	 */
-	public function find(callable $matchFunc, bool $revers = null, $localWork = null) :array
+	public function find(callable $matchFunc, bool $revers = null, $localOnly = null) :array
 	{
 		$foundAliases = [];
 		$aliases = array_keys($this->_aliasDetails);
@@ -116,32 +117,35 @@ class ClassAlias implements ArrayAccess
 			if(call_user_func($matchFunc, $this->_aliasDetails[$alias]))
 				$foundAliases[] = $alias;
 		}
-		if(!$localWork && ($CA = $this->parent))
+		if(!$localOnly && ($CA = $this->parent))
 			$foundAliases+= $CA->find($matchFunc, $revers);
 		return $foundAliases;
 	}
 
 	/**
 	 * @param string $alias
+	 * @param bool $localOnly
 	 * @return ClassAliasDetails|null
 	 */
-	public function get(string $alias)
+	public function get(string $alias, bool $localOnly = null)
 	{
 		if(isset($this->_aliasDetails[$alias]))
 			return $this->_aliasDetails[$alias];
-		elseif ($CA = $this->parent)
+		elseif (!$localOnly && $CA = $this->parent)
 			return $CA->get($alias);
 		return null;
 	}
 
 	/**
 	 * @param string $alias
+	 * @param string $default [optional]
+	 * @param bool $localOnly [optional]
 	 * @return string
 	 */
-	public function getClassName(string $alias) :string
+	public function getClassName(string $alias, string $default = null, bool $localOnly = null) :string
 	{
-		$detail = $this->get($alias);
-		return !empty($detail['className']) ?(string) $detail['className'] :'';
+		$detail = $this->get($alias, $localOnly);
+		return !empty($detail['className']) ?(string) $detail['className'] :(string) $default;
 	}
 
 
@@ -258,8 +262,8 @@ class ClassAlias implements ArrayAccess
 	{
 		if(substr($name,0,3)=='get' && ($detailName = substr($name, 3)) && !empty($arguments[0])){
 			$detailName = strtolower(substr($detailName,0,1)) . substr($detailName,1);
-			if(($details = $this->get($arguments[0])) && isset($details[$detailName]))
-				return $details[$detailName];
+			if(($details = $this->get($arguments[0], empty($arguments[2]) ?null :(bool) $arguments[2])))
+				return isset($details[$detailName]) ?$details[$detailName] :(isset($arguments[1]) ?$arguments[1] :null);
 		}
 		return null;
 	}
