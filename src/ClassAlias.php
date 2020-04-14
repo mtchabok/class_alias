@@ -107,18 +107,22 @@ class ClassAlias implements ArrayAccess
 	 * 		<br>}
 	 * @param bool $revers [optional]
 	 * @param bool $localOnly [optional]
+	 * @param int $maxNumFound [optional]
 	 * @return string[]
 	 */
-	public function find(callable $matchFunc, bool $revers = null, $localOnly = null) :array
+	public function find(callable $matchFunc, bool $revers = null, $localOnly = null, int $maxNumFound = null) :array
 	{
 		$foundAliases = [];
 		$aliases = array_keys($this->_aliasDetails);
 		while (strlen($alias = $revers ?array_shift($aliases) :array_pop($aliases))){
-			if(call_user_func($matchFunc, $this->_aliasDetails[$alias]))
+			if(call_user_func($matchFunc, $this->_aliasDetails[$alias])) {
 				$foundAliases[] = $alias;
+				if($maxNumFound && count($foundAliases)>=$maxNumFound)
+					break;
+			}
 		}
-		if(!$localOnly && ($CA = $this->parent))
-			$foundAliases+= $CA->find($matchFunc, $revers);
+		if(!$localOnly && ($CA = $this->parent) && count($foundAliases)<$maxNumFound)
+			$foundAliases+= $CA->find($matchFunc, $revers, null, $maxNumFound);
 		return $foundAliases;
 	}
 
