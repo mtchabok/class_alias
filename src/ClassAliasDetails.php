@@ -65,6 +65,31 @@ class ClassAliasDetails implements \ArrayAccess
 
 
 
+	/**
+	 * @param string $default [optional]
+	 * @param array $arguments [optional]
+	 * @return object|null
+	 */
+	public function newObject(string $default = null, array $arguments = null)
+	{
+		$className = $this->getClassName($default);
+		$arguments = is_array($arguments) ?array_values($arguments) :[];
+		if(!$className || !\class_exists($className)) return null;
+		switch (count($arguments)){
+			case 1: return new $className($arguments[0]);
+			case 2: return new $className($arguments[0], $arguments[1]);
+			case 3: return new $className($arguments[0], $arguments[1], $arguments[2]);
+			case 4: return new $className($arguments[0], $arguments[1], $arguments[2], $arguments[3]);
+			case 5: return new $className($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4]);
+			case 6: return new $className($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5]);
+			case 7: return new $className($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5], $arguments[6]);
+			case 8: return new $className($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5], $arguments[6], $arguments[7]);
+			case 9: return new $className($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5], $arguments[6], $arguments[7], $arguments[8]);
+			case 0: default: return new $className();
+		}
+	}
+
+
 
 	/**
 	 * @param array|ClassAliasDetails $details
@@ -89,8 +114,10 @@ class ClassAliasDetails implements \ArrayAccess
 	{ return $this->_details; }
 
 
-
-
+	/**
+	 * ClassAliasDetails constructor.
+	 * @param array $details [optional] array( 'alias'=>'alias name', 'className'=>'absolute class name', ... )
+	 */
 	public function __construct(array $details = null)
 	{
 		if(is_array($details))

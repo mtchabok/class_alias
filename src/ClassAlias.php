@@ -157,11 +157,21 @@ class ClassAlias implements ArrayAccess
 	public function getClassName(string $alias, string $default = null, bool $localOnly = null) :string
 	{
 		$detail = $this->get($alias, $localOnly);
-		return !empty($detail['className']) ?(string) $detail['className'] :(string) $default;
+		return $detail ?$detail->getClassName($default) :(string) $default;
 	}
 
-
-
+	/**
+	 * @param string $alias
+	 * @param string $default [optional]
+	 * @param bool $localOnly [optional]
+	 * @param array $arguments [optional]
+	 * @return object|null
+	 */
+	public function newObject(string $alias, string $default = null, bool $localOnly = null, array $arguments = null)
+	{
+		$details = $this->get($alias, $localOnly);
+		return $details ?$details->newObject($default, $arguments) :null;
+	}
 
 
 
